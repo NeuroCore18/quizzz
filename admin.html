@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .users-list {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .user-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .screenshot-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .screenshot-image {
+            max-width: 100%;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .screenshot-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .answers-section {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .answer-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loader {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 5px solid #3498db;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Quiz Admin Dashboard</h1>
+            <p>View all quiz submissions and captured images</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-users">0</div>
+                <div>Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-screenshots">0</div>
+                <div>Total Screenshots</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="today-submissions">0</div>
+                <div>Today's Submissions</div>
+            </div>
+        </div>
+        
+        <div class="users-list">
+            <h2>User Submissions</h2>
+            <div id="users-container">
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Loading user data...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="user-details" class="hidden">
+            <button class="btn" onclick="showUserList()">← Back to Users</button>
+            <h2 id="selected-user-name">User Details</h2>
+            
+            <div class="answers-section">
+                <h3>Quiz Answers</h3>
+                <div id="user-answers"></div>
+            </div>
+            
+            <div class="screenshots-section">
+                <h3>Captured Screenshots</h3>
+                <div class="screenshots-grid" id="screenshots-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration (same as your quiz app)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDdk3OML5O_X4aMClOo2svH77ldXWk3aA4",
+            authDomain: "scammers69.firebaseapp.com",
+            projectId: "scammers69",
+            storageBucket: "scammers69.firebasestorage.app",
+            messagingSenderId: "344596974081",
+            appId: "1:344596974081:web:05bd5e1ec9a70184308e00",
+            measurementId: "G-QHWVYT4VW6"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let allUsers = [];
+        let allScreenshots = [];
+
+        // Load all data when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            loadAllData();
+        });
+
+        // Load all users and screenshots
+        async function loadAllData() {
+            try {
+                // Load quiz results
+                const quizSnapshot = await db.collection('quizResults').get();
+                allUsers = [];
+                quizSnapshot.forEach(doc => {
+                    allUsers.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                // Load screenshots
+                const screenshotsSnapshot = await db.collection('quizScreenshots').get();
+                allScreenshots = [];
+                screenshotsSnapshot.forEach(doc => {
+                    allScreenshots.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                updateStats();
+                displayUsers();
+
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('users-container').innerHTML = 
+                    '<div class="loading">Error loading data. Please check console.</div>';
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('total-users').textContent = allUsers.length;
+            document.getElementById('total-screenshots').textContent = allScreenshots.length;
+            
+            // Count today's submissions
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todaySubmissions = allUsers.filter(user => {
+                const userDate = user.timestamp.toDate();
+                return userDate >= today;
+            }).length;
+            
+            document.getElementById('today-submissions').textContent = todaySubmissions;
+        }
+
+        // Display users list
+        function displayUsers() {
+            const usersContainer = document.getElementById('users-container');
+            
+            if (allUsers.length === 0) {
+                usersContainer.innerHTML = '<div class="loading">No submissions yet.</div>';
+                return;
+            }
+
+            // Sort users by timestamp (newest first)
+            allUsers.sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate());
+
+            let usersHTML = '';
+            allUsers.forEach(user => {
+                const date = user.timestamp.toDate().toLocaleString();
+                const screenshotCount = allScreenshots.filter(s => s.userId === user.user).length;
+                
+                usersHTML += `
+                    <div class="user-item" onclick="showUserDetails('${user.user}')">
+                        <div class="user-header">
+                            <strong>${user.user}</strong>
+                            <span>${date}</span>
+                        </div>
+                        <div>
+                            <small>
+                                ${screenshotCount} screenshots | 
+                                ${user.totalScreenshots || 0} total | 
+                                ${Math.round(user.duration / 1000)}s duration
+                            </small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            usersContainer.innerHTML = usersHTML;
+        }
+
+        // Show user details
+        function showUserDetails(username) {
+            const user = allUsers.find(u => u.user === username);
+            if (!user) return;
+
+            document.getElementById('users-container').parentElement.classList.add('hidden');
+            document.getElementById('user-details').classList.remove('hidden');
+            document.getElementById('selected-user-name').textContent = `${username}'s Submission`;
+
+            // Display answers
+            displayUserAnswers(user);
+            
+            // Display screenshots
+            displayUserScreenshots(username);
+        }
+
+        // Display user answers
+        function displayUserAnswers(user) {
+            const answersContainer = document.getElementById('user-answers');
+            
+            if (!user.answers || Object.keys(user.answers).length === 0) {
+                answersContainer.innerHTML = '<p>No answers recorded.</p>';
+                return;
+            }
+
+            let answersHTML = '';
+            Object.keys(user.answers).forEach(questionIndex => {
+                const questionNumber = parseInt(questionIndex) + 1;
+                const answerIndex = user.answers[questionIndex];
+                const questions = getQuestionText(questionIndex);
+                
+                answersHTML += `
+                    <div class="answer-item">
+                        <strong>Question ${questionNumber}:</strong> ${questions.question}<br>
+                        <strong>Answer:</strong> ${questions.options[answerIndex]}
+                    </div>
+                `;
+            });
+
+            answersContainer.innerHTML = answersHTML;
+        }
+
+        // Display user screenshots
+        function displayUserScreenshots(username) {
+            const screenshotsContainer = document.getElementById('screenshots-container');
+            const userScreenshots = allScreenshots.filter(s => s.userId === username);
+            
+            if (userScreenshots.length === 0) {
+                screenshotsContainer.innerHTML = '<p>No screenshots found for this user.</p>';
+                return;
+            }
+
+            // Sort screenshots by timestamp
+            userScreenshots.sort((a, b) => a.timestamp.toDate() - b.timestamp.toDate());
+
+            let screenshotsHTML = '';
+            userScreenshots.forEach((screenshot, index) => {
+                const time = screenshot.timestamp.toDate().toLocaleString();
+                const questionInfo = screenshot.questionNumber ? `Q: ${screenshot.questionNumber}` : 'Final';
+                
+                screenshotsHTML += `
+                    <div class="screenshot-item">
+                        <div class="screenshot-info">
+                            #${index + 1} | ${questionInfo} | ${time}<br>
+                            <small>Type: ${screenshot.type || 'unknown'}</small>
+                        </div>
+                        <img src="${screenshot.screenshotData}" 
+                             alt="Screenshot ${index + 1}" 
+                             class="screenshot-image"
+                             onerror="this.style.display='none'">
+                        <div>
+                            <small>Data: ${screenshot.screenshotData.length} chars</small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            screenshotsContainer.innerHTML = screenshotsHTML;
+        }
+
+        // Show user list again
+        function showUserList() {
+            document.getElementById('users-container').parentElement.classList.remove('hidden');
+            document.getElementById('user-details').classList.add('hidden');
+        }
+
+        // Question data (same as quiz app)
+        function getQuestionText(index) {
+            const questions = [
+                { question: "What do you enjoy doing in your free time?", options: ["Reading books or articles", "Socializing with friends", "Creative activities like painting or writing", "Outdoor activities and sports", "Watching movies or playing games"] },
+                { question: "How would you describe your ideal weekend?", options: ["Quiet time alone to recharge", "Spending time with close friends or family", "Trying new experiences or adventures", "Being productive and accomplishing tasks", "Relaxing without any specific plans"] },
+                { question: "What matters most to you in a relationship?", options: ["Honesty and trust", "Emotional connection and understanding", "Shared interests and activities", "Independence and personal space", "Support during challenging times"] },
+                { question: "How do you handle stress?", options: ["Talk to someone about it", "Exercise or physical activity", "Spend time alone to process", "Distract myself with hobbies", "Make a plan to address the source"] },
+                { question: "What's your approach to making important decisions?", options: ["Follow my intuition", "Research and analyze thoroughly", "Seek advice from others", "Consider long-term consequences", "Go with what feels right in the moment"] },
+                { question: "How do you express affection?", options: ["Through words of affirmation", "Physical touch and closeness", "Acts of service and help", "Quality time together", "Thoughtful gifts or surprises"] },
+                { question: "What kind of stories resonate with you most?", options: ["Romantic relationships and connections", "Personal growth and transformation", "Adventure and exploration", "Mystery and problem-solving", "Real-life experiences and biographies"] },
+                { question: "How important is romance in your life?", options: ["Extremely important - I'm a romantic at heart", "Important but not the center of my life", "It comes and goes depending on circumstances", "I appreciate romance but don't actively seek it", "I prefer practical connections over romance"] },
+                { question: "What draws you to someone initially?", options: ["Their sense of humor and personality", "Physical appearance and style", "Intelligence and conversation", "Shared values and interests", "Confidence and ambition"] },
+                { question: "How do you maintain connections with loved ones?", options: ["Regular communication and check-ins", "Making time for meaningful conversations", "Sharing experiences and creating memories", "Being there during important moments", "Respecting each other's space and boundaries"] },
+                { question: "What's your love language?", options: ["Words of affirmation - hearing 'I love you'", "Quality time - undivided attention", "Receiving gifts - thoughtful presents", "Acts of service - helpful actions", "Physical touch - hugs, holding hands"] },
+                { question: "How do you deal with conflict in relationships?", options: ["Address it directly and immediately", "Take time to cool off before discussing", "Seek compromise and understanding", "Avoid confrontation when possible", "Express feelings through writing or indirect communication"] },
+                { question: "What makes you feel most appreciated?", options: ["Verbal recognition and praise", "Thoughtful gestures and surprises", "Quality time and attention", "Physical affection and closeness", "Support for my goals and dreams"] },
+                { question: "How do you approach dating?", options: ["Looking for serious long-term commitment", "Open to whatever comes naturally", "Enjoying the process of meeting new people", "Focused on personal connection over labels", "Taking things slow and building trust"] },
+                { question: "What role does friendship play in your relationships?", options: ["Essential - my partner should be my best friend", "Important but different from romantic connection", "Friendship develops alongside romance", "I prefer keeping friendships and relationships separate", "Friendship is the foundation of any good relationship"] },
+                { question: "How do you express vulnerability?", options: ["Openly with people I trust", "Gradually as comfort grows", "Through creative expression", "Rarely - I prefer to stay strong", "Only when absolutely necessary"] },
+                { question: "What's your idea of a perfect date?", options: ["Deep conversation over coffee or drinks", "An adventurous activity or trip", "A cozy night in with movies and food", "Trying a new restaurant or cuisine", "Something spontaneous and unexpected"] },
+                { question: "How important is physical attraction to you?", options: ["Very important - it's the initial spark", "Important but personality matters more", "It grows as I get to know someone", "I'm attracted to confidence and energy", "Connection matters more than physical appearance"] },
+                { question: "What do you value most in yourself?", options: ["My empathy and caring nature", "My intelligence and problem-solving skills", "My creativity and unique perspective", "My reliability and loyalty", "My adaptability and resilience"] },
+                { question: "How do you envision your ideal future relationship?", options: ["A partnership of equals supporting each other", "A passionate and exciting connection", "A stable and comfortable companionship", "A relationship that allows for individual growth", "A deep spiritual and emotional bond"] }
+            ];
+            
+            return questions[index] || { question: "Unknown question", options: ["Unknown answer"] };
+        }
+    </script>
+</body>
+</html>

